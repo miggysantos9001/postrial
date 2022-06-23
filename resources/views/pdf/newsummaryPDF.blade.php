@@ -6,7 +6,7 @@
         
             body{
                 font-family: 'Lato', sans-serif;
-                font-size:0.8em;
+                font-size:1.2em;
             }
         
             .header{
@@ -153,6 +153,8 @@
                                     <th class="text-center">TAX</th>
                                     <th class="text-center">FINAL AMOUNT</th>
                                     <th class="text-center">AMOUNT PAID</th>
+                                    <th class="text-center">BALANCE</th>
+                                    <th class="text-center">AR DAYS</th>
                                 </tr>
 	                        </thead>
 	                        <tbody>
@@ -195,6 +197,44 @@
                                                 }
                                             @endphp
                                             {{ $ap }}
+                                        </td>
+                                    @endif
+                                    @if ($key == 0)
+                                        <td rowspan="{{ $items->count() }}" class="text-center" style="vertical-align: middle;">
+                                            @php
+                                                $payment = \App\Payment_detail::where('customer_id',$customer->id)
+                                                    ->where('booking_id',$item->booking_id)
+                                                    ->first();
+                                                
+                                                if($payment == NULL){
+                                                    $ap = 0;
+                                                }else{
+                                                    $pa = \App\Payment::where('id',$payment->payment_id)->first();
+                                                    $ap = $pa->amount;
+                                                }
+                                            @endphp
+                                            {{ number_format($final_amount - $ap,0) }}
+                                        </td>
+                                    @endif
+                                    @if ($key == 0)
+                                        <td rowspan="{{ $items->count() }}" class="text-center" style="vertical-align: middle;">
+                                            @php
+                                                $payment = \App\Payment_detail::where('customer_id',$customer->id)
+                                                    ->where('booking_id',$item->booking_id)
+                                                    ->first();
+                                                
+                                                if($payment == NULL){
+                                                    $fdate = \Carbon\Carbon::now()->toDateString();
+                                                    $tdate = $date;
+                                                    $datetime1 = new DateTime($fdate);
+                                                    $datetime2 = new DateTime($tdate);
+                                                    $interval = $datetime1->diff($datetime2);
+                                                    $days = $interval->format('%a');
+                                                }else{
+                                                    $days = '';
+                                                }
+                                            @endphp
+                                            {{ $days }}
                                         </td>
                                     @endif
                                 </tr>
