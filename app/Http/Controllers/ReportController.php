@@ -4,9 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Order;
 use App\Booking;
+use App\Booking_detail;
 use App\Customer;
 use App\Client;
-
+use App\Product;
 use Validator;
 use Auth;
 use PDF;
@@ -337,6 +338,61 @@ class ReportController extends Controller
         }
 
         return View('pdf.discrepancyPDF', compact('array','date_from','date_to','client','theclient'));
+    }
+
+    public function view_report_soa(){
+        $customers = \App\Customer::orderBy('name')->get()->pluck('name','id');
+    	return view('reports.summary-soa',compact('customers'));
+    }
+
+    public function post_report_soa(){
+        $validator = Validator::make(Request::all(), [
+            'customer_id'         =>  'required',
+            'month_id'          =>  'required',
+            'year_id'           =>  'required',
+        ],
+        [
+            'customer_id.required'        =>  'Please select client',
+            'month_id.required'         =>  'Please select month',
+            'year_id.required'          =>  'Please select year',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        $month = Request::get('month_id');
+    	$year = Request::get('year_id');
+        $customer = Customer::where('id',Request::get('customer_id'))->first();
+
+        $monthNum  = $month;
+        $dateObj   = \DateTime::createFromFormat('!m', $monthNum);
+        $monthName = $dateObj->format('F'); // March
+
+        $str_month = $monthName;
+    	$days=cal_days_in_month(CAL_GREGORIAN,$month,$year);
+        $data = array();
+
+        $data = Booking_detail::where('customer_id',$customer->id)
+            ->whereMonth('date',$month)
+            ->whereYear('date',$year)
+            ->where('weight','>',0)
+            ->orderBy('date')
+            ->get();
+
+        // $pheads = Product::where('isHead',1)->get();
+
+        // for($i = 1; $i<= $days; $i++){
+        // 	$str_date = "$str_month $i, $year";
+        // 	$dt = date('F j, Y', strtotime($str_date));
+            
+        //     $data[$i]['dt'] = $dt;
+        // }
+
+        return View('pdf.newsummaryPDF',compact('monthName','year','data','customer'));
+
     }
     
     public function view_summary(){

@@ -85,6 +85,7 @@ Route::get('/reports/yearly-report-all-client','ReportController@yearly_report_a
 Route::get('/reports/yearly-sales-report','ReportController@yearly_sales_report');
 Route::get('/reports/monthly-expense-report','ReportController@monthly_expense_report');
 Route::get('/reports/yearly-expense-report','ReportController@yearly_expense_report');
+Route::get('/reports/new-report-soa','ReportController@view_report_soa');
 
 Route::post('/reports/view-summary','ReportController@post_summary');
 Route::post('/reports/view-sales-summary','ReportController@post_sales_summary');
@@ -105,6 +106,7 @@ Route::post('/reports/yearly-report-all-client','ReportController@print_yearly_r
 Route::post('/reports/yearly-sales-report','ReportController@print_yearly_sales_report');
 Route::post('/reports/monthly-expense-report','ReportController@print_monthly_expense_report');
 Route::post('/reports/yearly-expense-report','ReportController@print_yearly_expense_report');
+Route::post('/reports/new-report-soa','ReportController@post_report_soa');
 
 Route::resource('/svi-bookings','SVIBookingController');
 
