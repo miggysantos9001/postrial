@@ -170,6 +170,7 @@
                             <li><a href="{{ action('ReportController@yearly_sales_report') }}"><i class="fa fa-circle-o"></i> Yearly Sales Report</a></li>
                             <li><a href="{{ action('ReportController@monthly_expense_report') }}"><i class="fa fa-circle-o"></i> Monthly Expense Report</a></li>
                             <li><a href="{{ action('ReportController@yearly_expense_report') }}"><i class="fa fa-circle-o"></i> Yearly Expense Report</a></li>
+                            <li><a href="{{ action('ReportController@view_report_soa') }}"><i class="fa fa-circle-o"></i> New Report SOA</a></li>
                         </ul>
                     </li>
                     <li class="treeview">

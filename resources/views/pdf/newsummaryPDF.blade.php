@@ -129,18 +129,13 @@
 		                            <span class="company-address">Davao City</span>
 		                        </span>
 		                    </div>
-		                    <div class="title">Summary for the month of {{ $monthName }}, {{ $year }}</div>
+		                    <div class="title">Summary for the month of {{ $monthName }}, {{ $year }} of {{ $customer->name }}</div>
 		                </div>
 		            </div>
                 </div>
                 <div class="row">
 	                <div class="col-md-12">
-                        @foreach($data->groupBy('date') as $date => $items)
-                        @php
-                            $tax = $final_amount = 0;
-                        @endphp
-                        <p>{{ \Carbon\Carbon::parse($date)->toFormattedDateString() }}</p>
-	                    <table>
+                        <table>
 	                        <thead>
                                 <tr>
                                     <th class="text-center">DATE</th>
@@ -157,11 +152,22 @@
                                     <th class="text-center">AR DAYS</th>
                                 </tr>
 	                        </thead>
+                        @php
+                            $m_amt = $m_tax = $m_fa = $m_ap = $m_bal = 0;
+                        @endphp
+                        @foreach($data->groupBy('date') as $date => $items)
+                        @php
+                            $tax = $final_amount = 0;
+                        @endphp
 	                        <tbody>
 	                            @foreach($items as $key => $item)
+                                @php
+                                    $tax += ($item->unit_price * $item->weight) * .01;
+                                    $final_amount += $items->sum('total_price') - ($items->sum('total_price') * .01);
+                                @endphp
                                 <tr>
                                     @if ($key == 0)
-                                        <td rowspan="{{ $items->count() }}" class="text-center" style="vertical-align: middle;">{{ $date }}</td>
+                                        <td rowspan="{{ $items->count() }}" class="text-center" style="vertical-align: middle;">{{ \Carbon\Carbon::parse($date)->toFormattedDateString() }}</td>
                                     @endif
                                     
                                     <td>{{ $item->product->name }}</td>
@@ -169,20 +175,14 @@
                                     <td>{{ $item->weight }}</td>
                                     <td>{{ number_format($item->heads / $item->weight,2) }}</td>
                                     <td>{{ number_format($item->unit_price,2) }}</td>
-                                    <td>{{ number_format($item->unit_price * $item->weight,2) }}</td>
-                                    <td>{{ ($item->product->isHead == 1) ? number_format(($item->unit_price * $item->weight) * .01,2) : 0 }}</td>
-                                    {{-- <td>{{ ($item->product->isHead == 1) ? number_format(($item->unit_price * $item->weight) - (($item->unit_price * $item->weight) * .01),2) : number_format(($item->unit_price * $item->weight),2) }}</td> --}}
-                                    @php
-                                        $tax += ($item->unit_price * $item->weight) * .01;
-                                    
-                                        $final_amount += $items->sum('total_price');
-                                        
-                                        
-                                    @endphp
                                     @if ($key == 0)
+                                        {{-- AMOUNT --}}
+                                        <td rowspan="{{ $items->count() }}" class="text-center" style="vertical-align: middle;">{{ number_format($items->sum('total_price'),2) }}</td>
+                                        {{-- TAX --}}
+                                        <td rowspan="{{ $items->count() }}" class="text-center" style="vertical-align: middle;">{{ number_format($tax,2) }}</td>
+                                        {{-- FINAL AMOUNT --}}
                                         <td rowspan="{{ $items->count() }}" class="text-center" style="vertical-align: middle;">{{ number_format($final_amount,2) }}</td>
-                                    @endif
-                                    @if ($key == 0)
+                                        {{-- PAYMENT --}}
                                         <td rowspan="{{ $items->count() }}" class="text-center" style="vertical-align: middle;">
                                             @php
                                                 $payment = \App\Payment_detail::where('customer_id',$customer->id)
@@ -198,8 +198,7 @@
                                             @endphp
                                             {{ $ap }}
                                         </td>
-                                    @endif
-                                    @if ($key == 0)
+                                        {{-- BALANCE --}}
                                         <td rowspan="{{ $items->count() }}" class="text-center" style="vertical-align: middle;">
                                             @php
                                                 $payment = \App\Payment_detail::where('customer_id',$customer->id)
@@ -213,10 +212,9 @@
                                                     $ap = $pa->amount;
                                                 }
                                             @endphp
-                                            {{ number_format($final_amount - $ap,0) }}
+                                            {{ number_format($final_amount - $ap,2) }}
                                         </td>
-                                    @endif
-                                    @if ($key == 0)
+                                        {{-- AR DAYS --}}
                                         <td rowspan="{{ $items->count() }}" class="text-center" style="vertical-align: middle;">
                                             @php
                                                 $payment = \App\Payment_detail::where('customer_id',$customer->id)
@@ -236,6 +234,13 @@
                                             @endphp
                                             {{ $days }}
                                         </td>
+                                        @php
+                                            $m_amt += $items->sum('total_price');
+                                            $m_tax += $tax;
+                                            $m_fa += $final_amount;
+                                            $m_ap += $ap;
+                                            $m_bal += $final_amount - $ap;
+                                        @endphp
                                     @endif
                                 </tr>
                                 @endforeach
@@ -249,9 +254,18 @@
                                     <td>{{ number_format($tax,2) }}</td>
                                     <td>{{ number_format($final_amount,2) }}</td>
                                 </tr> --}}
-	                        </tbody>
-	                    </table>
                         @endforeach
+                                <tr>
+                                    <td colspan="6" class="text-right">Summary Details</td>
+                                    <td class="text-center">{{ number_format($m_amt,2) }}</td>
+                                    <td class="text-center">{{ number_format($m_tax,2) }}</td>
+                                    <td class="text-center">{{ number_format($m_fa,2) }}</td>
+                                    <td class="text-center">{{ number_format($m_ap,2) }}</td>
+                                    <td class="text-center">{{ number_format($m_bal,2) }}</td>
+                                    <td></td>
+                                </tr>
+                            </tbody>
+                        </table>
 	                </div>
 	            </div>
             </section>
